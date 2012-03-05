@@ -16,7 +16,7 @@ using Lucene.Net.Index;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
 
-
+using System.Web.Script.Serialization;
 
 
 namespace WindowsFormsApplication1
