@@ -19,16 +19,38 @@ using System.Web.Script.Serialization;
 namespace WindowsFormsApplication1
 {
     public class text_score {
+        public string question = "";
         public string text1 = "";
         public float score1 = 0;
+        public int doc1 = 0;
         public string text2 = "";
         public float score2 = 0;
+        public int doc2 = 0;
         public string text3 = "";
         public float score3 = 0;
+        public int doc3 = 0;
         public string text4 = "";
         public float score4 = 0;
+        public int doc4 = 0;
         public string text5 = "";
         public float score5 = 0;
+        public int doc5 = 0;
+        public string text6 = "";
+        public float score6 = 0;
+        public int doc6 = 0;
+        public string text7 = "";
+        public float score7 = 0;
+        public int doc7 = 0;
+        public string text8 = "";
+        public float score8 = 0;
+        public int doc8 = 0;
+        public string text9 = "";
+        public float score9 = 0;
+        public int doc9 = 0;
+        public string text10 = "";
+        public float score10 = 0;
+        public int doc10 = 0;
+        public float totalScore = 0;
     }
     public class array_text_score
     {
@@ -68,22 +90,22 @@ namespace WindowsFormsApplication1
             open.ShowDialog();
             List<string> questions = new List<string>();
             List<text_score> text_scores = new List<text_score>();
-            JavaScriptSerializer jsonIn = new JavaScriptSerializer();
-            using (StreamReader inHandle = new StreamReader(open.FileName))
-            {
-                questions = jsonIn.Deserialize<List<string>>(inHandle.ReadToEnd());
+            //JavaScriptSerializer jsonIn = new JavaScriptSerializer();
+            //using (StreamReader inHandle = new StreamReader(open.FileName))
+            //{
+            //    questions = jsonIn.Deserialize<List<string>>(inHandle.ReadToEnd());
          
-            }
+            //}
 
 
             
-            open.ShowDialog();
+            //open.ShowDialog();
 
-            using (StreamReader inHandle = new StreamReader(open.FileName))
-            {
-                questions.AddRange(jsonIn.Deserialize<List<string>>(inHandle.ReadToEnd()));
+            //using (StreamReader inHandle = new StreamReader(open.FileName))
+            //{
+            //    questions.AddRange(jsonIn.Deserialize<List<string>>(inHandle.ReadToEnd()));
 
-            }
+            //}
 
             
             //string line;
@@ -94,6 +116,14 @@ namespace WindowsFormsApplication1
             //    }
             
             //}
+
+            using (StreamReader inHandle = new StreamReader(open.FileName))
+            {
+                System.Xml.Serialization.XmlSerializer xml = new System.Xml.Serialization.XmlSerializer(typeof(List<string>));
+                questions = xml.Deserialize(inHandle) as List<string>;
+
+            }
+
 
             
             IndexWriter w = new IndexWriter(index, analyzer);
@@ -121,16 +151,18 @@ namespace WindowsFormsApplication1
                     Query q = null;
                     try
                     {
-                        q = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "title", analyzer).Parse(querystr);
+                        q = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "title", analyzer).Parse(QueryParser.Escape(querystr));
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
+                        System.Console.WriteLine(err.Message);
                         goto skip;
+
                     }
                     //q.Parse();
 
 
-                    int hitsPerPage = 5;
+                    int hitsPerPage = 10;
                     IndexReader reader = IndexReader.Open(index, true);
                     IndexSearcher searcher = new IndexSearcher(reader);
                     TopScoreDocCollector collector = TopScoreDocCollector.Create(hitsPerPage, true);
@@ -139,6 +171,7 @@ namespace WindowsFormsApplication1
 
                     //outhandle.Write("Found {0} Hits|", hits.Length);
                     text_score temp = new text_score();
+                    temp.question = i + ".) " +  questions[i];
                     int j = 0;
                     foreach (var item in hits)
                     {
@@ -149,25 +182,60 @@ namespace WindowsFormsApplication1
                         {
                             temp.text1 = d.Get("title");
                             temp.score1 = item.Score;
+                            temp.doc1 = docId;
                         }else if (j == 1)
                         {
                             temp.text2 = d.Get("title");
                             temp.score2 = item.Score;
+                            temp.doc2 = docId;
                         }
                         else if (j == 2)
                         {
                             temp.text3 = d.Get("title");
                             temp.score3 = item.Score;
+                            temp.doc3 = docId;
                         }
                         else if (j == 3)
                         {
                             temp.text4 = d.Get("title");
                             temp.score4 = item.Score;
+                            temp.doc4 = docId;
                         }
                         else if (j == 4)
                         {
                             temp.text5 = d.Get("title");
                             temp.score5 = item.Score;
+                            temp.doc5 = docId;
+                        }
+                        else if (j == 5)
+                        {
+                            temp.text6 = d.Get("title");
+                            temp.score6 = item.Score;
+                            temp.doc6 = docId;
+                        }
+                        else if (j == 6)
+                        {
+                            temp.text7 = d.Get("title");
+                            temp.score7 = item.Score;
+                            temp.doc7 = docId;
+                        }
+                        else if (j == 7)
+                        {
+                            temp.text8 = d.Get("title");
+                            temp.score8 = item.Score;
+                            temp.doc8 = docId;
+                        }
+                        else if (j == 8)
+                        {
+                            temp.text9 = d.Get("title");
+                            temp.score9 = item.Score;
+                            temp.doc9 = docId;
+                        }
+                        else if (j == 9)
+                        {
+                            temp.text10 = d.Get("title");
+                            temp.score10 = item.Score;
+                            temp.doc10 = docId;
                         }
 
 
@@ -178,6 +246,8 @@ namespace WindowsFormsApplication1
                         //outhandle.Write( d.Get("title").Replace("\n"," ") + "|" + item.Score + "|");
                         j++;
                     }
+                    temp.totalScore = temp.score1 + temp.score2 + temp.score3 + temp.score4 + temp.score5 + 
+                        temp.score6 + temp.score7 + temp.score8 + temp.score9 + temp.score10;
                     text_scores.Add(temp);
                     outhandle.WriteLine();
                     
