@@ -19,7 +19,8 @@ using System.Web.Script.Serialization;
 namespace WindowsFormsApplication1
 {
     public class text_score {
-        public string question; 
+        public string question;
+        public int question_id;
         public string[] text; 
         public float[] score;
         public int[] doc;
@@ -54,8 +55,11 @@ namespace WindowsFormsApplication1
     }
     public class text_finalScore
     {
+        public int docid;
         public string text;
         public float total;
+        public string relateddocs;
+        public string relatedscores;
     }
     
     
@@ -143,7 +147,7 @@ namespace WindowsFormsApplication1
             Stopwatch time = new Stopwatch();
             time.Start();
 
-            int hitsize = 10;
+            int hitsize = 30;
             
             using (StreamWriter outhandle = new StreamWriter("out.txt"))
             {
@@ -174,7 +178,8 @@ namespace WindowsFormsApplication1
 
                     //outhandle.Write("Found {0} Hits|", hits.Length);
                     text_score temp = new text_score(hitsize);
-                    temp.question = i + ".) " +  questions[i];
+                    temp.question =  questions[i];
+                    temp.question_id = i;
                     int j = 0;
                     foreach (var item in hits)
                     {
@@ -206,27 +211,74 @@ namespace WindowsFormsApplication1
                 time.Stop();
                 System.Console.WriteLine(time.ElapsedMilliseconds);
             }
-            using (StreamWriter outh = new StreamWriter("out.xml"))
+            using (StreamWriter outh = new StreamWriter(open.FileName.Split('.').First() + ".full.xml"))
             {
                 System.Xml.Serialization.XmlSerializer xml = new System.Xml.Serialization.XmlSerializer(typeof(List<text_score>));
                 xml.Serialize(outh, text_scores);
 
             }
+            outputResults(open, text_scores,"results");
+
+            removeSimilar(text_scores);
+
+            outputResults(open, text_scores, "reduced");
+            
+
+
+
+        }
+        /// <summary>
+        /// This function puts into a format excel will show correctly
+        /// </summary>
+        /// <param name="open"></param>
+        /// <param name="text_scores"></param>
+        private static void outputResults(OpenFileDialog open, List<text_score> text_scores, string results)
+        {
             List<text_finalScore> outFinal = new List<text_finalScore>();
             foreach (text_score item in text_scores)
             {
-                outFinal.Add(new text_finalScore() { text = item.question, total = item.totalScore });
+                outFinal.Add(new text_finalScore()
+                {
+                    text = item.question,
+                    total = item.totalScore,
+                    docid = item.question_id,
+                    relateddocs = string.Join(",", item.doc),
+                    relatedscores = string.Join(",", item.score)
+                });
 
             }
-            using (StreamWriter outh = new StreamWriter("outFinal.xml"))
+            using (StreamWriter outh = new StreamWriter(open.FileName.Split('.').First() + "." + results + ".xml"))
             {
                 System.Xml.Serialization.XmlSerializer xml = new System.Xml.Serialization.XmlSerializer(typeof(List<text_finalScore>));
                 xml.Serialize(outh, outFinal);
 
             }
+        }
 
-
-
+        private static void  removeSimilar(List<text_score> items)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                float basescore = items[i].score[0];
+                for (int j = 1; j < items[i].doc.Length; j++)
+                {
+                    if (Math.Abs(items[i].score[j] / basescore - 1.0) < .05)
+                    {
+                        text_score temp;
+                        try
+                        {
+                            temp = items.First(x => x.question_id == items[i].doc[j]);
+                        }
+                        catch (Exception err)
+                        {
+                            temp = null;
+                        }
+                        if(temp!=null){
+                            items.Remove(temp);
+                        }
+                    }
+                }
+            }
         }
 
         private static void addDoc(IndexWriter w, String value)
