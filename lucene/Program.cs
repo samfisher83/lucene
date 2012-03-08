@@ -39,6 +39,17 @@ namespace WindowsFormsApplication1
         }
         public void computeTotal(){
             totalScore = 0;
+            float baseScore = score[0];
+
+            for (int i = 0; i < score.Length; i++)
+            {
+                score[i] = score[i] / baseScore;
+            }
+            
+            
+            
+            
+            
             for (int i = 0; i < score.Length; i++)
             {
                 totalScore += score[i];
@@ -247,6 +258,9 @@ namespace WindowsFormsApplication1
                 });
 
             }
+            outFinal = outFinal.OrderByDescending(x => x.total).ToList();
+
+
             using (StreamWriter outh = new StreamWriter(open.FileName.Split('.').First() + "." + results + ".xml"))
             {
                 System.Xml.Serialization.XmlSerializer xml = new System.Xml.Serialization.XmlSerializer(typeof(List<text_finalScore>));
@@ -262,7 +276,7 @@ namespace WindowsFormsApplication1
                 float basescore = items[i].score[0];
                 for (int j = 1; j < items[i].doc.Length; j++)
                 {
-                    if (Math.Abs(items[i].score[j] / basescore - 1.0) < .05)
+                    if (Math.Abs(items[i].score[j] / basescore - 1.0) < .30)
                     {
                         text_score temp;
                         try
